@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS project (
+  id TEXT PRIMARY KEY,
+  title VARCHAR(60) NOT NULL,
+  description TEXT NOT NULL,
+  technologies VARCHAR(70) NOT NULL,
+  url VARCHAR(60) NOT NULL,
+  githubRepo VARCHAR(60) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS experience (
+  id TEXT PRIMARY KEY,
+  jobName VARCHAR(20) NOT NULL,
+  date VARCHAR(20) NOT NULL,
+  jobPosition TEXT NOT NULL
+);
