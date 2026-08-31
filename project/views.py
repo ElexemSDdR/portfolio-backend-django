@@ -1,40 +1,72 @@
+from django.core.exceptions import BadRequest
 from rest_framework.views import APIView as ApiView
 from rest_framework.response import Response
 from project.models import Project
 from project.serializers import ProjectSerializer
 from rest_framework.request import Request
 from django.views.decorators.csrf import csrf_exempt
+from django.db import models
 
 # Create your views here.
 class ProjectView(ApiView):
-    def get(self, request):
+    def get(self, _):
         projects = Project.objects.all()
-        serializer = ProjectSerializer(projects, many=True)
-        return Response(serializer.data)
+
+        if (len(projects) == 0):
+            return Response({'message': 'No projects were found.'}, status=404)
+
+        serialized_project = ProjectSerializer(projects, many=True).data
+        return Response(serialized_project)
 
     def post(self, request: Request, format=None):
         body = request.data
         serialized_body = ProjectSerializer(data=body)
 
         if (not serialized_body.is_valid()):
-            return Response({'message': 'El objeto no es válido', 'errors': serialized_body.errors}, status=400)
+            return Response({'message': 'The project is not valid.', 'errors': serialized_body.errors}, status=400)
 
         new_project = Project.objects.create(**serialized_body.data)
-        parsed_new_project = ProjectSerializer(new_project)
+        parsed_new_project = ProjectSerializer(new_project).data
 
-        return Response(parsed_new_project.data.get('id'), status=201)
+        return Response(parsed_new_project.get('id'), status=201)
 
     @csrf_exempt
-    def delete(self, request: Request, id):
-        projects = Project.objects.all()
-        found_project = projects.get(id=id)
-        
-        if (not found_project):
-            return Response('No se encontró ningún proyecto', status=404)
+    def delete(self, _, id):
+        try:
+            project = Project.objects.get(id=id)
+        except Project.DoesNotExist:
+            return Response({'message': f'No projects with id {id} were found.'}, status=404)
     
-        deletion = found_project.delete()
+        deletion = project.delete()
 
         if (deletion.count == 0):
-            return Response('No se pudo borrar el elemento', status=500)
+            return Response('The project could not be deleted.', status=500)
+
+        return Response(status=204)
+
+    def patch(self, request: Request, id):
+        body = request.data
+
+        if (type(body) is list):
+            return Response({'message': 'The body has to be an object, not a list.'}, status=400)
+
+        try:
+            project = Project.objects.get(id=id)
+        except Project.DoesNotExist:
+            return Response({'message': f'No projects with id {id} were found.'}, status=404)
+
+        serialized_project = ProjectSerializer(project).data
+
+        for key, value in body.items():
+            if (not serialized_project.keys().__contains__(key)):
+                return Response({'message': f'Could not update the project, "{key}" key does not exists in project object.'}, status=400)
+
+            serialized_project[key] = value
+            edited_project = ProjectSerializer(data=serialized_project)
+
+            if (not edited_project.is_valid()):
+                return Response({'message': f'Could not update the "{key}" value.', 'errors': edited_project.errors}, status=400)
+
+            edited_project.update(project, edited_project.data)
 
         return Response(status=204)
