@@ -20,6 +20,10 @@ class ProjectView(ApiView):
 
     def post(self, request: Request, format=None):
         body = request.data
+
+        if (body is None):
+            return Response({'message': 'The body must not be empty.'}, status=400)
+
         serialized_body = ProjectSerializer(data=body)
 
         if (not serialized_body.is_valid()):
@@ -31,7 +35,10 @@ class ProjectView(ApiView):
         return Response(parsed_new_project.get('id'), status=201)
 
     @csrf_exempt
-    def delete(self, _, id):
+    def delete(self, _, id=''):
+        if (id == ''):
+            return Response({'message': 'Missing project ID.'}, status=400)
+
         try:
             project = Project.objects.get(id=id)
         except Project.DoesNotExist:
@@ -44,11 +51,19 @@ class ProjectView(ApiView):
 
         return Response(status=204)
 
-    def patch(self, request: Request, id):
+    def patch(self, request: Request, id=''):
+        if (id == ''):
+            return Response({'message': 'Missing project ID.'}, status=400)
+
         body = request.data
+
+        if (body is None):
+            return Response({'message': 'The body must not be empty.'}, status=400)
 
         if (type(body) is list):
             return Response({'message': 'The body has to be an object, not a list.'}, status=400)
+
+        body = dict(body)
 
         try:
             project = Project.objects.get(id=id)
