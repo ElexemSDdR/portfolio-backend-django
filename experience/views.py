@@ -11,14 +11,24 @@ def validate_date(date: str):
 
 # Create your views here.
 class ExperienceView(ApiView):
-    def get(self, _):
-        experiences = Experience.objects.all()
+    def get(self, _, id=''):
+        if (not id):
+            experiences = Experience.objects.all()
 
-        if (len(experiences) == 0):
-            return Response({'message': 'No experiences were found.'}, status=404)
+            if (len(experiences) == 0):
+                return Response({'message': 'No experiences were found.'}, status=404)
 
-        serialized_experience = ExperienceSerializer(experiences, many=True).data
-        return Response(serialized_experience)
+            serialized_experiences = ExperienceSerializer(experiences, many=True).data
+            return Response(serialized_experiences)
+        else:
+            experience = Experience.objects.get(id=id)
+
+            if (not id):
+                return Response({'message': f'No experience with id {id} was found.'}, status=404)
+
+            serialized_experience = ExperienceSerializer(experience).data
+
+            return Response(serialized_experience)
 
     def post(self, request: Request, format=None):
         body = request.data

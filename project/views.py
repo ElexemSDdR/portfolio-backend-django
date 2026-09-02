@@ -9,14 +9,25 @@ from django.db import models
 
 # Create your views here.
 class ProjectView(ApiView):
-    def get(self, _):
-        projects = Project.objects.all()
+    def get(self, _, id=''):
+        if (not id):
+            projects = Project.objects.all()
 
-        if (len(projects) == 0):
-            return Response({'message': 'No projects were found.'}, status=404)
+            if (len(projects) == 0):
+                return Response({'message': 'No projects were found.'}, status=404)
 
-        serialized_project = ProjectSerializer(projects, many=True).data
-        return Response(serialized_project)
+            serialized_projects = ProjectSerializer(projects, many=True).data
+            return Response(serialized_projects)
+        else:
+            project = Project.objects.get(id=id)
+
+            if (not project):
+                return Response({'message': f'No project with id {id} was found.'}, status=404)
+
+            serialized_project = ProjectSerializer(project).data
+
+            return Response(serialized_project)
+
 
     def post(self, request: Request, format=None):
         body = request.data
