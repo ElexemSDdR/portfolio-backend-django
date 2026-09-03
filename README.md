@@ -2,6 +2,6 @@
 Backend to my portfolio. CRUD for projects and experiences with validations.
 
 ## TODO
-[x] Projects CRUD.
-[x] Experiences CRUD.
-[] Auth to use Create, Update and Delete methods of the CRUDs.
+- [x] Projects CRUD.
+- [x] Experiences CRUD.
+- [ ] Auth to use Create, Update and Delete methods of the CRUDs.
