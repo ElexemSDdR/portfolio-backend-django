@@ -1,11 +1,9 @@
-from django.core.exceptions import BadRequest
 from rest_framework.views import APIView as ApiView
 from rest_framework.response import Response
 from project.models import Project
 from project.serializers import ProjectSerializer
 from rest_framework.request import Request
 from django.views.decorators.csrf import csrf_exempt
-from django.db import models
 
 # Create your views here.
 class ProjectView(ApiView):
@@ -19,9 +17,9 @@ class ProjectView(ApiView):
             serialized_projects = ProjectSerializer(projects, many=True).data
             return Response(serialized_projects)
         else:
-            project = Project.objects.get(id=id)
-
-            if (not project):
+            try:
+                project = Project.objects.get(id=id)
+            except Project.DoesNotExist:
                 return Response({'message': f'No project with id {id} was found.'}, status=404)
 
             serialized_project = ProjectSerializer(project).data

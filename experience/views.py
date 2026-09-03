@@ -21,9 +21,9 @@ class ExperienceView(ApiView):
             serialized_experiences = ExperienceSerializer(experiences, many=True).data
             return Response(serialized_experiences)
         else:
-            experience = Experience.objects.get(id=id)
-
-            if (not id):
+            try: 
+                experience = Experience.objects.get(id=id)
+            except Experience.DoesNotExist:
                 return Response({'message': f'No experience with id {id} was found.'}, status=404)
 
             serialized_experience = ExperienceSerializer(experience).data
